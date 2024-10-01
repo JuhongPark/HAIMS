@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>블록체인 기반 자산운용 시스템</title>
+    <style>
+        body {
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            background-color: #f4f4f4;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+            line-height: 1.6;
+        }
+
+        h1 {
+            text-align: center;
+            color: #003366; /* 다크 블루 색상 */
+            margin-bottom: 20px;
+            font-size: 2.5em;
+        }
+
+        h2 {
+            color: #003366;
+            border-bottom: 2px solid #003366;
+            padding-bottom: 5px;
+            margin-top: 20px;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            font-size: 1em;
+        }
+
+        button {
+            background-color: #003366; /* 다크 블루 색상 */
+            color: white;
+            border: none;
+            padding: 12px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            width: 100%;
+            font-size: 1em;
+        }
+
+        button:hover {
+            background-color: #002244; /* 더 어두운 블루 */
+        }
+
+        pre {
+            background-color: #e9ecef;
+            padding: 10px;
+            border-radius: 4px;
+            overflow: auto;
+            font-size: 0.9em;
+            margin-top: 10px;
+        }
+
+        /* 감사 보고서 스타일링 */
+        .audit-report {
+            background-color: #f0f8ff;
+            padding: 15px;
+            border: 1px solid #b0e0e6;
+            border-radius: 4px;
+            color: #0056b3;
+            font-weight: bold;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 0.8em;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <h1>블록체인 기반 자산운용 시스템</h1>
+    <div class="container">
+        <!-- 자산 입금 섹션 -->
+        <h2>투자금 입금</h2>
+        <input type="text" id="depositAmount" placeholder="입금할 금액 (ETH)">
+        <button onclick="deposit()">입금하기</button>
+
+        <!-- 잔액 확인 섹션 -->
+        <h2>잔액 확인</h2>
+        <button onclick="getBalance()">내 잔액 확인</button>
+        <p id="balance">잔액: - </p>
+
+        <!-- 감사 보고서 섹션 -->
+        <h2>감사 보고서</h2>
+        <button onclick="audit()">감사 보고서 요청</button>
+        <pre id="audit-report" class="audit-report"></pre>
+    </div>
+
+    <footer>
+        &copy; 2024 블록체인 기반 자산운용 시스템. 모든 권리 보유.
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/gh/ethereum/web3.js@1.3.6/dist/web3.min.js"></script>
+    <script>
+        let contractAddress;
+        let contractABI;
+        let web3;
+        let contract;
+
+        // JSON 파일에서 ABI와 계약 주소 읽기
+        async function loadContractInfo() {
+            const response = await fetch('contract_info.json');
+            const data = await response.json();
+            contractAddress = data.address;
+            contractABI = data.abi;
+        }
+
+        // MetaMask 연결
+        async function connectWallet() {
+            if (window.ethereum) {
+                web3 = new Web3(window.ethereum);
+                await window.ethereum.request({ method: 'eth_requestAccounts' });
+                contract = new web3.eth.Contract(contractABI, contractAddress);
+                console.log("MetaMask 연결 완료");
+            } else {
+                alert('MetaMask를 설치해주세요.');
+            }
+        }
+
+        // 입금 함수
+        async function deposit() {
+            const amount = document.getElementById("depositAmount").value;
+            const accounts = await web3.eth.getAccounts();
+            await contract.methods.deposit().send({ from: accounts[0], value: web3.utils.toWei(amount, 'ether') });
+            alert("입금 완료!");
+        }
+
+        // 잔액 확인 함수
+        async function getBalance() {
+            const accounts = await web3.eth.getAccounts();
+            const balance = await contract.methods.get_balance(accounts[0]).call();
+            document.getElementById("balance").innerText = `잔액: ${web3.utils.fromWei(balance, 'ether')} ETH`;
+        }
+
+        // 감사 보고서 요청 함수
+        async function audit() {
+            const accounts = await web3.eth.getAccounts();
+            const balance = await contract.methods.get_balance(accounts[0]).call(); // 잔액 조회
+
+            // 감사 보고서 포맷팅
+            document.getElementById("audit-report").innerText =
+                `${accounts[0]}가 총 ${web3.utils.fromWei(balance, 'ether')} ETH를 입금했습니다.\n` +
+                `입금 시각: ${new Date().toLocaleString()}`;  // 현재 시간 표시
+        }
+
+        // 웹 페이지 로드 시 ABI와 계약 주소 읽기 및 MetaMask 연결
+        window.onload = async () => {
+            await loadContractInfo();
+            await connectWallet();
+        };
+    </script>
+</body>
+</html>
+
