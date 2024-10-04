@@ -3,7 +3,7 @@
 ### Hyper Audited Investment Management System
 블록체인 기반으로 감사 기능에 주안을 둔 투자 관리 시스템입니다.
 
-본 Repo는 서울대 빅데이터 핀테크 AI 고급 전문가 과정 9기 수업의 과제를 위해 구현되었습니다.[^1]
+본 Repo는 서울대 빅데이터 핀테크 AI 고급 전문가 과정의 프로젝트를 위해 구현되었습니다.[^1]
 
 <img src="https://github.com/user-attachments/assets/b0fa108b-7e10-41e9-8535-6521709ee09b" width="400"/>
 
